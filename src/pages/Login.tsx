@@ -22,9 +22,14 @@ export default function Login() {
       <div className="w-full max-w-sm bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
         <div className="flex items-center gap-2.5 mb-6">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 24 24" className="w-[55%] h-[55%]" fill="none">
-              <circle cx="10" cy="10" r="6.2" stroke="white" strokeWidth="2.4" />
-              <line x1="14.6" y1="14.6" x2="20.5" y2="20.5" stroke="white" strokeWidth="2.8" strokeLinecap="round" />
+            <svg viewBox="0 0 32 32" className="w-[60%] h-[60%]" fill="none">
+              <path
+                d="M9 11h14l-1.3 10.5a2 2 0 0 1-2 1.5H12.3a2 2 0 0 1-2-1.5L9 11z"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              <path d="M12.5 11v-1a3.5 3.5 0 0 1 7 0v1" stroke="white" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
           <span className="text-lg font-bold text-brand-blue-dark tracking-tight">Vizi Vendas</span>

@@ -7,7 +7,11 @@
 --   1. Apaga itens_venda, vendas, movimentos_estoque, turnos (nessa ordem,
 --      por causa das referências entre as tabelas) e qualquer produto de
 --      teste chamado "TESTE".
---   2. Recoloca 20 unidades de estoque inicial em cada produto real.
+--   2. Recoloca o estoque inicial: 50 unidades pra maioria dos produtos,
+--      exceto Água 500ml, Refresco de ananás 300ml e Refresco de manga
+--      300ml, que ficam de propósito abaixo do estoque mínimo deles —
+--      assim o alerta de estoque baixo continua aparecendo na demo
+--      (esses 3 têm o maior estoque_minimo do catálogo: 30/20/20).
 --   3. Só então apaga a auditoria — depois de tudo o resto, pra não
 --      sobrar nem o rastro do próprio reset (a entrada de estoque acima
 --      também gera linha de auditoria, por isso essa ordem importa).
@@ -35,7 +39,17 @@ delete from turnos;
 delete from produtos where nome = 'TESTE';
 
 insert into movimentos_estoque (produto_id, tipo, quantidade, usuario_id, motivo)
-select id, 'entrada', 20, (select id from profiles where papel = 'gestor' limit 1), 'Estoque inicial de demonstração'
+select
+  id,
+  'entrada',
+  case nome
+    when 'Água 500ml' then 10
+    when 'Refresco de ananás 300ml' then 5
+    when 'Refresco de manga 300ml' then 15
+    else 50
+  end,
+  (select id from profiles where papel = 'gestor' limit 1),
+  'Estoque inicial de demonstração'
 from produtos;
 
 delete from auditoria;
