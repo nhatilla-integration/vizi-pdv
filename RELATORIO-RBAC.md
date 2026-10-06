@@ -6,7 +6,7 @@ script `scripts/teste-rbac.js`. Cobre as 4 contas de papel (gestor,
 funcionário 1 = João, funcionário 2 = Manuel, dono), sem login nenhum,
 e o cenário de prazo expirado.
 
-**Resultado geral: 52 de 52 ações testadas vieram bloqueadas. Nenhuma
+**Resultado geral: 70 de 70 ações testadas vieram bloqueadas. Nenhuma
 ação proibida foi permitida.**
 
 ## Ação × perfil (sistema ativo)
@@ -14,18 +14,18 @@ ação proibida foi permitida.**
 | Ação | Gestor | Funcionário 1 (João) | Funcionário 2 (Manuel) | Dono | Sem login |
 |---|---|---|---|---|---|
 | Cadastrar produto (insert) | — ¹ | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado |
-| Editar produto (update) | — ¹ | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | — |
-| Entrada de estoque (RPC) | — ¹ | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | — |
-| Ajuste de estoque (RPC) | — ¹ | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | — |
-| Abrir caixa — `abrir_turno` (RPC) | ✅ bloqueado | — ¹ | — ¹ | ✅ bloqueado | — |
+| Editar produto (update) | — ¹ | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado |
+| Entrada de estoque (RPC) | — ¹ | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado |
+| Ajuste de estoque (RPC) | — ¹ | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado |
+| Abrir caixa — `abrir_turno` (RPC) | ✅ bloqueado | — ¹ | — ¹ | ✅ bloqueado | ✅ bloqueado |
 | Registrar venda (RPC) | ✅ bloqueado | — ¹ | — ¹ | ✅ bloqueado | ✅ bloqueado |
-| Fechar caixa — `fechar_turno` (RPC)² | ✅ bloqueado | — ¹ | — ¹ | ✅ bloqueado | — |
-| Cancelar venda (RPC) | — ¹ | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | — |
+| Fechar caixa — `fechar_turno` (RPC)² | ✅ bloqueado | — ¹ | — ¹ | ✅ bloqueado | ✅ bloqueado |
+| Cancelar venda (RPC) | — ¹ | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado |
 | Ler vendas de outro usuário | — ¹ | ✅ bloqueado | ✅ bloqueado | — ¹ | ✅ bloqueado |
-| Ler movimentos de estoque | — ¹ | ✅ bloqueado | ✅ bloqueado | — ¹ | — |
-| Ler auditoria | — ¹ | ✅ bloqueado | ✅ bloqueado | — ¹ | — |
-| Alterar registro de auditoria (update) | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | — |
-| Apagar registro de auditoria (delete) | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | — |
+| Ler movimentos de estoque | — ¹ | ✅ bloqueado | ✅ bloqueado | — ¹ | ✅ bloqueado |
+| Ler auditoria | — ¹ | ✅ bloqueado | ✅ bloqueado | — ¹ | ✅ bloqueado |
+| Alterar registro de auditoria (update) | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado |
+| Apagar registro de auditoria (delete) | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado |
 | Alterar `configuracao` (ex: `expira_em`) | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado | ✅ bloqueado |
 
 ¹ Ação permitida pra esse papel — não faz parte do que deveria estar
@@ -38,6 +38,14 @@ chamando (`funcionario_id = auth.uid()`), e só funcionário consegue ter
 um turno. Na prática o resultado é o mesmo (gestor/dono não conseguem
 fechar caixa nenhum), mas o mecanismo é "dono do dado", não "checagem
 de papel" — registrando aqui pra ficar documentado.
+
+**Observação sem relevância de segurança**: sem login, a RPC
+`registrar_entrada_estoque` bloqueou com uma mensagem diferente das
+outras (`permission denied for function`, em vez de `Não
+autenticado.`) — ambas são o Postgres recusando a chamada antes de
+qualquer dado ser tocado, só por caminhos distintos. Resultado final é
+o mesmo (bloqueado); registrando aqui só por transparência, não é um
+problema.
 
 **Sobre os dois funcionários**: João e Manuel foram testados
 separadamente, cada um tentando ler vendas/estoque/auditoria sem
@@ -55,8 +63,9 @@ logo em seguida.
 | Ação | Gestor | Funcionário 1 (João) | Funcionário 2 (Manuel) | Dono | Sem login |
 |---|---|---|---|---|---|
 | Ler produtos | ✅ bloqueado (RLS filtrou) | ✅ bloqueado (RLS filtrou) | ✅ bloqueado (RLS filtrou) | ✅ bloqueado (RLS filtrou) | ✅ bloqueado (erro de permissão) |
+| Ler vendas | ✅ bloqueado (RLS filtrou) | ✅ bloqueado (RLS filtrou) | ✅ bloqueado (RLS filtrou) | ✅ bloqueado (RLS filtrou) | ✅ bloqueado (erro de permissão) |
 | Ação de escrita principal do papel³ | ✅ bloqueado ("Período de demonstração encerrado.") | ✅ bloqueado ("Período de demonstração encerrado.") | ✅ bloqueado ("Período de demonstração encerrado.") | — | — |
-| Ler auditoria | — | — | — | ✅ bloqueado (RLS filtrou) | — |
+| Ler auditoria | ✅ bloqueado (RLS filtrou) | — | — | ✅ bloqueado (RLS filtrou) | — |
 
 ³ Entrada de estoque pro gestor, abrir caixa pro funcionário — RPCs
 que já checam `sistema_ativo()` antes de qualquer outra coisa.
@@ -95,8 +104,10 @@ foi confirmado em todos os papéis, incluindo os dois funcionários.
 
 ## Conclusão
 
-Nenhuma ação proibida foi permitida em nenhum dos 52 testes, em nenhum
-dos 4 papéis, com o sistema ativo ou expirado. O único ponto sem
+Nenhuma ação proibida foi permitida em nenhum dos 70 testes, em nenhum
+dos 4 papéis, com o sistema ativo ou expirado — incluindo, agora, a
+coluna "sem login" testada por completo (antes algumas ações dela
+estavam assumidas como óbvias e não tinham sido rodadas de verdade). O único ponto sem
 confirmação prática ao vivo (troca de senha/e-mail) tem explicação
 registrada acima e um mitigador de baixo esforço já incluído no
 `reset_demo.sql`. Nenhuma regra do sistema foi alterada durante essa

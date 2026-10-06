@@ -1,6 +1,6 @@
 # Relatório de verificação RBAC — bateria normal
 
-Gerado em 2026-10-06T22:17:09.896Z
+Gerado em 2026-10-06T22:35:07.287Z
 
 | Papel | Ação | Resultado | Detalhe |
 |---|---|---|---|
@@ -48,6 +48,16 @@ Gerado em 2026-10-06T22:17:09.896Z
 | sem_login | estoque_produtos (RPC) | ✅ bloqueado | erro: Não autenticado. |
 | sem_login | registrar_venda (RPC) | ✅ bloqueado | erro: Não autenticado. |
 | sem_login | cadastrar produto (insert) | ✅ bloqueado | erro: permission denied for table produtos |
+| sem_login | editar produto (update) | ✅ bloqueado | erro: permission denied for table produtos |
+| sem_login | entrada de estoque (RPC) | ✅ bloqueado | erro: permission denied for function registrar_entrada_estoque |
+| sem_login | ajuste de estoque (RPC) | ✅ bloqueado | erro: Não autenticado. |
+| sem_login | abrir_turno (RPC) | ✅ bloqueado | erro: Não autenticado. |
+| sem_login | fechar_turno (RPC) | ✅ bloqueado | erro: Não autenticado. |
+| sem_login | cancelar venda (RPC) | ✅ bloqueado | erro: Não autenticado. |
+| sem_login | ler movimentos de estoque | ✅ bloqueado | erro: permission denied for table movimentos_estoque |
+| sem_login | ler auditoria | ✅ bloqueado | erro: permission denied for table auditoria |
+| sem_login | alterar registro de auditoria (update) | ✅ bloqueado | erro: permission denied for table auditoria |
+| sem_login | apagar registro de auditoria (delete) | ✅ bloqueado | erro: permission denied for table auditoria |
 | sem_login | alterar configuracao | ✅ bloqueado | erro: permission denied for table configuracao |
 | qualquer_papel | trocar a própria senha via auth.updateUser | ⚠️ NÃO TESTADO | não testado ao vivo — cadastro de conta descartável falhou (Signups not allowed for this instance). Por padrão do Supabase, qualquer usuário autenticado pode trocar a própria senha/e-mail via auth.updateUser, independente de papel — isso não é algo que RLS controle. |
 

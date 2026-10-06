@@ -287,6 +287,43 @@ async function testarSemLogin() {
     .from('produtos')
     .insert([{ nome: 'Produto via teste RBAC (anon)', categoria: 'Souvenir', preco: 1 }])
     .select())
+  registrar('sem_login', 'editar produto (update)', await client
+    .from('produtos')
+    .update({ preco: 999 })
+    .neq('id', UUID_FALSO)
+    .select())
+  registrar('sem_login', 'entrada de estoque (RPC)', await client.rpc('registrar_entrada_estoque', {
+    p_produto_id: UUID_FALSO,
+    p_quantidade: 1,
+    p_motivo: 'teste rbac (anon)',
+    p_nf: null,
+  }))
+  registrar('sem_login', 'ajuste de estoque (RPC)', await client.rpc('ajustar_estoque', {
+    p_produto_id: UUID_FALSO,
+    p_quantidade: 1,
+    p_motivo: 'teste rbac (anon)',
+  }))
+  registrar('sem_login', 'abrir_turno (RPC)', await client.rpc('abrir_turno', { p_valor_inicial: 0 }))
+  registrar('sem_login', 'fechar_turno (RPC)', await client.rpc('fechar_turno', {
+    p_turno_id: UUID_FALSO,
+    p_valor_contado: 0,
+  }))
+  registrar('sem_login', 'cancelar venda (RPC)', await client.rpc('cancelar_venda', {
+    p_venda_id: UUID_FALSO,
+    p_motivo: 'teste rbac (anon)',
+  }))
+  registrarLeitura('sem_login', 'ler movimentos de estoque', await client.from('movimentos_estoque').select('id'))
+  registrarLeitura('sem_login', 'ler auditoria', await client.from('auditoria').select('id'))
+  registrar('sem_login', 'alterar registro de auditoria (update)', await client
+    .from('auditoria')
+    .update({ motivo: 'tentativa de alteração via teste (anon)' })
+    .neq('id', UUID_FALSO)
+    .select())
+  registrar('sem_login', 'apagar registro de auditoria (delete)', await client
+    .from('auditoria')
+    .delete()
+    .neq('id', UUID_FALSO)
+    .select())
   registrar('sem_login', 'alterar configuracao', await client
     .from('configuracao')
     .update({ expira_em: new Date().toISOString() })
@@ -355,6 +392,7 @@ async function main() {
     for (const papel of ['gestor', 'funcionario1', 'funcionario2', 'dono']) {
       const { client } = await login(papel)
       registrarLeitura(papel, '[expirado] ler produtos', await client.from('produtos').select('id'))
+      registrarLeitura(papel, '[expirado] ler vendas', await client.from('vendas').select('id'))
       if (papel === 'gestor') {
         registrar(papel, '[expirado] entrada de estoque (RPC)', await client.rpc('registrar_entrada_estoque', {
           p_produto_id: UUID_FALSO,
@@ -362,6 +400,7 @@ async function main() {
           p_motivo: 'teste rbac expirado',
           p_nf: null,
         }))
+        registrarLeitura(papel, '[expirado] ler auditoria', await client.from('auditoria').select('id'))
       }
       if (papel === 'funcionario1' || papel === 'funcionario2') {
         registrar(papel, '[expirado] abrir_turno (RPC)', await client.rpc('abrir_turno', { p_valor_inicial: 0 }))
@@ -372,6 +411,7 @@ async function main() {
       await client.auth.signOut()
     }
     registrarLeitura('sem_login', '[expirado] ler produtos', await novoClient().from('produtos').select('id'))
+    registrarLeitura('sem_login', '[expirado] ler vendas', await novoClient().from('vendas').select('id'))
   } else {
     console.log('=== Bateria NORMAL (sistema ativo) ===\n')
 
