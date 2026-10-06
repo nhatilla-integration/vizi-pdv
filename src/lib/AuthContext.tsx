@@ -33,11 +33,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    const [{ data: profileData }, { data: ativo }, { data: configData }] = await Promise.all([
+    const [{ data: profileData }, { data: ativo }, { data: configData, error: erroConfig }] = await Promise.all([
       supabase.from('profiles').select('id, nome, papel').eq('id', currentSession.user.id).single(),
       supabase.rpc('sistema_ativo'),
       supabase.from('configuracao').select('id, modo_demo, expira_em').eq('id', 1).single(),
     ])
+
+    if (erroConfig) console.error('Erro ao buscar configuracao:', erroConfig.message)
 
     setProfile((profileData as Profile) ?? null)
     setSistemaAtivo(Boolean(ativo))
