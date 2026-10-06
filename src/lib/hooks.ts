@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from './supabase'
 import { useAuth } from './AuthContext'
 import type { Produto, Turno } from './types'
@@ -6,6 +6,7 @@ import type { Produto, Turno } from './types'
 export function useProdutos(incluirInativos = false) {
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
+  const canalId = useRef(crypto.randomUUID())
 
   const fetchProdutos = useCallback(async () => {
     let query = supabase.from('produtos').select('*').order('categoria').order('nome')
@@ -27,7 +28,7 @@ export function useProdutos(incluirInativos = false) {
     fetchProdutos()
 
     const channel = supabase
-      .channel('produtos-changes')
+      .channel(`produtos-changes-${canalId.current}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'produtos' }, fetchProdutos)
       .subscribe()
 
@@ -42,6 +43,7 @@ export function useProdutos(incluirInativos = false) {
 export function useEstoque() {
   const [estoque, setEstoque] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
+  const canalId = useRef(crypto.randomUUID())
 
   const fetchEstoque = useCallback(async () => {
     const { data, error } = await supabase.rpc('estoque_produtos')
@@ -62,7 +64,7 @@ export function useEstoque() {
     fetchEstoque()
 
     const channel = supabase
-      .channel('estoque-changes')
+      .channel(`estoque-changes-${canalId.current}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentos_estoque' }, fetchEstoque)
       .subscribe()
 
