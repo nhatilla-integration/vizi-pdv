@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 import { useAuth } from '../lib/AuthContext'
 
 const NOME_PAPEL: Record<string, string> = {
-  gestor: 'Gestor',
-  funcionario: 'Funcionário',
-  dono: 'Dono',
+  gestor: 'Gestor(a)',
+  funcionario: 'Funcionário(a)',
+  dono: 'Dono(a)',
 }
 
 export default function Layout({ children }: { children: ReactNode }) {
