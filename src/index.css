@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #0B5CAB;
+  --color-brand-blue-dark: #032D60;
+  --color-brand-blue-light: #EAF2FC;
+  --color-brand-orange: #FF7A59;
+  --color-brand-orange-dark: #E8623D;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #F4F6F9;
+  -webkit-tap-highlight-color: transparent;
+}
