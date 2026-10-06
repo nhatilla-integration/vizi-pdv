@@ -1,13 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import type { Profile } from './types'
+import type { Configuracao, Profile } from './types'
 
 interface AuthState {
   loading: boolean
   session: Session | null
   profile: Profile | null
   sistemaAtivo: boolean
+  configuracao: Configuracao | null
   signIn: (email: string, senha: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
@@ -19,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [sistemaAtivo, setSistemaAtivo] = useState(false)
+  const [configuracao, setConfiguracao] = useState<Configuracao | null>(null)
 
   async function carregarContexto(currentSession: Session | null) {
     setSession(currentSession)
@@ -26,17 +28,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!currentSession) {
       setProfile(null)
       setSistemaAtivo(false)
+      setConfiguracao(null)
       setLoading(false)
       return
     }
 
-    const [{ data: profileData }, { data: ativo }] = await Promise.all([
+    const [{ data: profileData }, { data: ativo }, { data: configData }] = await Promise.all([
       supabase.from('profiles').select('id, nome, papel').eq('id', currentSession.user.id).single(),
       supabase.rpc('sistema_ativo'),
+      supabase.from('configuracao').select('id, modo_demo, expira_em').eq('id', 1).single(),
     ])
 
     setProfile((profileData as Profile) ?? null)
     setSistemaAtivo(Boolean(ativo))
+    setConfiguracao((configData as Configuracao) ?? null)
     setLoading(false)
   }
 
@@ -61,8 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!session) return
 
     async function revalidar() {
-      const { data: ativo } = await supabase.rpc('sistema_ativo')
+      const [{ data: ativo }, { data: configData }] = await Promise.all([
+        supabase.rpc('sistema_ativo'),
+        supabase.from('configuracao').select('id, modo_demo, expira_em').eq('id', 1).single(),
+      ])
       setSistemaAtivo(Boolean(ativo))
+      setConfiguracao((configData as Configuracao) ?? null)
     }
 
     const intervalo = setInterval(revalidar, 5 * 60 * 1000)
@@ -88,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ loading, session, profile, sistemaAtivo, signIn, signOut }}>
+    <AuthContext.Provider value={{ loading, session, profile, sistemaAtivo, configuracao, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   )

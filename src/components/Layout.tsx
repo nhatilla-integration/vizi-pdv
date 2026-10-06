@@ -7,11 +7,27 @@ const NOME_PAPEL: Record<string, string> = {
   dono: 'Dono(a)',
 }
 
+function formatarDataMaputo(iso: string): string {
+  return new Intl.DateTimeFormat('pt-PT', {
+    timeZone: 'Africa/Maputo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(iso))
+}
+
 export default function Layout({ children }: { children: ReactNode }) {
-  const { profile, signOut } = useAuth()
+  const { profile, configuracao, signOut } = useAuth()
 
   return (
     <div className="min-h-screen bg-[#F4F6F9]">
+      {configuracao?.modo_demo && (
+        <div className="bg-amber-400 text-amber-950 text-center text-xs font-semibold py-1.5 px-4">
+          DEMONSTRAÇÃO — válido até {formatarDataMaputo(configuracao.expira_em)} (hora de Maputo)
+        </div>
+      )}
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
