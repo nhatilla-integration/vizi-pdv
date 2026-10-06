@@ -3,11 +3,16 @@
 -- link da demo pro Ebrahim. Pode rodar de novo com segurança sempre que
 -- precisar resetar (é seguro repetir).
 --
--- O que faz:
---   1. Apaga tudo que foi gerado em testes (vendas, itens, estoque, turnos, auditoria).
---   2. Remove qualquer produto de teste chamado "TESTE".
---   3. Recoloca 20 unidades de estoque inicial em cada produto real.
---   4. Renova o prazo de demonstração pra 7 dias a partir de agora.
+-- O que faz, nesta ordem:
+--   1. Apaga itens_venda, vendas, movimentos_estoque, turnos (nessa ordem,
+--      por causa das referências entre as tabelas) e qualquer produto de
+--      teste chamado "TESTE".
+--   2. Recoloca 20 unidades de estoque inicial em cada produto real.
+--   3. Só então apaga a auditoria — depois de tudo o resto, pra não
+--      sobrar nem o rastro do próprio reset (a entrada de estoque acima
+--      também gera linha de auditoria, por isso essa ordem importa).
+--   4. Define a expiração pra uma data fixa (ajuste conforme o combinado).
+-- Tudo dentro de begin/commit: ou roda tudo, ou não roda nada.
 --
 -- Não mexe nos nomes dos perfis (Ebrahim/Fátima/João/Manuel) — isso é
 -- feito uma vez só, não faz parte do reset.
@@ -26,7 +31,6 @@ delete from itens_venda;
 delete from vendas;
 delete from movimentos_estoque;
 delete from turnos;
-delete from auditoria;
 
 delete from produtos where nome = 'TESTE';
 
@@ -34,8 +38,10 @@ insert into movimentos_estoque (produto_id, tipo, quantidade, usuario_id, motivo
 select id, 'entrada', 20, (select id from profiles where papel = 'gestor' limit 1), 'Estoque inicial de demonstração'
 from produtos;
 
+delete from auditoria;
+
 update configuracao
-set expira_em = now() + interval '7 days', modo_demo = true
+set expira_em = '2026-10-13 23:59:00+02', modo_demo = true
 where id = 1;
 
 commit;
