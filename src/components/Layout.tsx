@@ -21,7 +21,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <line x1="14.6" y1="14.6" x2="20.5" y2="20.5" stroke="white" strokeWidth="2.8" strokeLinecap="round" />
               </svg>
             </div>
-            <span className="font-bold text-brand-blue-dark tracking-tight">Vizi PDV</span>
+            <span className="font-bold text-brand-blue-dark tracking-tight">Vizi Vendas</span>
           </div>
 
           <div className="flex items-center gap-4">

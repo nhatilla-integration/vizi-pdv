@@ -27,7 +27,7 @@ export default function Login() {
               <line x1="14.6" y1="14.6" x2="20.5" y2="20.5" stroke="white" strokeWidth="2.8" strokeLinecap="round" />
             </svg>
           </div>
-          <span className="text-lg font-bold text-brand-blue-dark tracking-tight">Vizi PDV</span>
+          <span className="text-lg font-bold text-brand-blue-dark tracking-tight">Vizi Vendas</span>
         </div>
 
         <h1 className="text-xl font-bold text-slate-900 mb-1">Entrar</h1>

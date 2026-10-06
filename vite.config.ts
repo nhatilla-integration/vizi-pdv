@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Vizi PDV',
-        short_name: 'Vizi PDV',
+        name: 'Vizi Vendas',
+        short_name: 'Vizi Vendas',
         description: 'Ponto de venda para o quiosque',
         theme_color: '#0B5CAB',
         background_color: '#F4F6F9',
