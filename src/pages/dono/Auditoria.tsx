@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { diffCampos, formatarValor } from '../../lib/auditoria'
 import type { Profile } from '../../lib/types'
 
 interface RegistroComAutor {
@@ -26,25 +27,6 @@ const TABELA_LABEL: Record<string, string> = {
   vendas: 'Venda',
   turnos: 'Turno',
   movimentos_estoque: 'Movimento de estoque',
-}
-
-function formatarValor(valor: unknown): string {
-  if (valor === null || valor === undefined || valor === '') return '—'
-  if (typeof valor === 'object') return JSON.stringify(valor)
-  return String(valor)
-}
-
-function diffCampos(antes: Record<string, unknown> | null, depois: Record<string, unknown> | null) {
-  const chaves = new Set([...(antes ? Object.keys(antes) : []), ...(depois ? Object.keys(depois) : [])])
-  const linhas: { campo: string; antes: unknown; depois: unknown }[] = []
-  for (const chave of chaves) {
-    const valorAntes = antes ? antes[chave] : undefined
-    const valorDepois = depois ? depois[chave] : undefined
-    if (JSON.stringify(valorAntes) !== JSON.stringify(valorDepois)) {
-      linhas.push({ campo: chave, antes: valorAntes, depois: valorDepois })
-    }
-  }
-  return linhas
 }
 
 export default function Auditoria() {

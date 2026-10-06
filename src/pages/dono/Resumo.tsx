@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { formatMT } from '../../lib/format'
+import {
+  agregarPorForma,
+  agregarPorFuncionario,
+  agregarPorProduto,
+  hojeISO,
+  intervaloDoDia,
+  totalVendido,
+  type ItemResumo,
+  type VendaResumo,
+} from '../../lib/resumo'
 import type { FormaPagamento, Profile } from '../../lib/types'
 
 interface VendaDoDia {
@@ -25,12 +35,6 @@ const FORMAS: { id: FormaPagamento; label: string }[] = [
   { id: 'cartao', label: 'Cartão' },
 ]
 
-function hojeISO(): string {
-  const agora = new Date()
-  const offset = agora.getTimezoneOffset()
-  return new Date(agora.getTime() - offset * 60000).toISOString().slice(0, 10)
-}
-
 export default function Resumo() {
   const [data, setData] = useState(hojeISO())
   const [vendas, setVendas] = useState<VendaDoDia[]>([])
@@ -42,8 +46,7 @@ export default function Resumo() {
     setLoading(true)
     setErro('')
 
-    const inicio = new Date(`${dataSelecionada}T00:00:00`)
-    const fim = new Date(inicio.getTime() + 24 * 60 * 60 * 1000)
+    const { inicio, fim } = intervaloDoDia(dataSelecionada)
 
     const [resVendas, resItens] = await Promise.all([
       supabase
@@ -80,35 +83,27 @@ export default function Resumo() {
     carregar(data)
   }, [data, carregar])
 
-  const concluidas = vendas.filter((v) => v.status === 'concluida')
-  const canceladas = vendas.filter((v) => v.status === 'cancelada')
-  const totalGeral = concluidas.reduce((soma, v) => soma + v.total, 0)
+  const vendasResumo: VendaResumo[] = vendas.map((v) => ({
+    total: v.total,
+    forma_pagamento: v.forma_pagamento,
+    status: v.status,
+    funcionario_id: v.funcionario_id,
+    nomeFuncionario: v.profiles?.nome ?? 'Funcionário',
+  }))
 
-  const porForma: Record<FormaPagamento, number> = { numerario: 0, carteira_movel: 0, cartao: 0 }
-  for (const v of concluidas) porForma[v.forma_pagamento] += v.total
+  const itensResumo: ItemResumo[] = itens.map((i) => ({
+    produto_id: i.produto_id,
+    quantidade: i.quantidade,
+    preco_unitario: i.preco_unitario,
+    nomeProduto: i.produtos?.nome ?? 'Produto removido',
+  }))
 
-  const porFuncionario = new Map<string, { nome: string; total: number; qtd: number }>()
-  for (const v of concluidas) {
-    const atual = porFuncionario.get(v.funcionario_id) ?? { nome: v.profiles?.nome ?? 'Funcionário', total: 0, qtd: 0 }
-    atual.total += v.total
-    atual.qtd += 1
-    porFuncionario.set(v.funcionario_id, atual)
-  }
-
-  const porProduto = new Map<string, { nome: string; quantidade: number; valor: number }>()
-  for (const item of itens) {
-    const atual = porProduto.get(item.produto_id) ?? {
-      nome: item.produtos?.nome ?? 'Produto removido',
-      quantidade: 0,
-      valor: 0,
-    }
-    atual.quantidade += item.quantidade
-    atual.valor += item.quantidade * item.preco_unitario
-    porProduto.set(item.produto_id, atual)
-  }
-  const maisVendidos = Array.from(porProduto.values())
-    .sort((a, b) => b.quantidade - a.quantidade)
-    .slice(0, 5)
+  const concluidas = vendasResumo.filter((v) => v.status === 'concluida')
+  const canceladas = vendasResumo.filter((v) => v.status === 'cancelada')
+  const totalGeral = totalVendido(vendasResumo)
+  const porForma = agregarPorForma(vendasResumo)
+  const porFuncionario = agregarPorFuncionario(vendasResumo)
+  const maisVendidos = agregarPorProduto(itensResumo, 5)
 
   return (
     <div>
@@ -163,20 +158,18 @@ export default function Resumo() {
 
           <div className="bg-white border border-slate-200 rounded-xl p-4">
             <h2 className="text-sm font-semibold text-slate-700 mb-3">Por funcionário</h2>
-            {porFuncionario.size === 0 ? (
+            {porFuncionario.length === 0 ? (
               <p className="text-xs text-slate-400 italic">Sem vendas concluídas nesse dia.</p>
             ) : (
               <div className="flex flex-col gap-2">
-                {Array.from(porFuncionario.values())
-                  .sort((a, b) => b.total - a.total)
-                  .map((f) => (
-                    <div key={f.nome} className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600">
-                        {f.nome} <span className="text-slate-400">({f.qtd} venda{f.qtd === 1 ? '' : 's'})</span>
-                      </span>
-                      <span className="font-medium text-slate-800">{formatMT(f.total)}</span>
-                    </div>
-                  ))}
+                {porFuncionario.map((f) => (
+                  <div key={f.funcionario_id} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600">
+                      {f.nome} <span className="text-slate-400">({f.qtd} venda{f.qtd === 1 ? '' : 's'})</span>
+                    </span>
+                    <span className="font-medium text-slate-800">{formatMT(f.total)}</span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -188,7 +181,7 @@ export default function Resumo() {
             ) : (
               <div className="flex flex-col gap-2">
                 {maisVendidos.map((p) => (
-                  <div key={p.nome} className="flex items-center justify-between text-sm">
+                  <div key={p.produto_id} className="flex items-center justify-between text-sm">
                     <span className="text-slate-600">{p.quantidade}x {p.nome}</span>
                     <span className="font-medium text-slate-800">{formatMT(p.valor)}</span>
                   </div>
