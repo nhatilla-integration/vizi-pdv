@@ -54,6 +54,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // sistema_ativo() só era checado no login — uma sessão aberta durante o
+  // momento em que o período de demonstração expira não percebia isso
+  // sozinha. Reverifica periodicamente e quando a aba volta a ficar visível.
+  useEffect(() => {
+    if (!session) return
+
+    async function revalidar() {
+      const { data: ativo } = await supabase.rpc('sistema_ativo')
+      setSistemaAtivo(Boolean(ativo))
+    }
+
+    const intervalo = setInterval(revalidar, 5 * 60 * 1000)
+
+    function aoFocar() {
+      if (document.visibilityState === 'visible') revalidar()
+    }
+    document.addEventListener('visibilitychange', aoFocar)
+
+    return () => {
+      clearInterval(intervalo)
+      document.removeEventListener('visibilitychange', aoFocar)
+    }
+  }, [session])
+
   async function signIn(email: string, senha: string) {
     const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
     return { error: error?.message ?? null }

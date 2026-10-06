@@ -52,7 +52,7 @@ export default function FecharCaixa({
 
     const { data, error } = await supabase.rpc('fechar_turno', {
       p_turno_id: turno.id,
-      p_valor_contado: Number(valorContado) || 0,
+      p_valor_contado: Math.max(0, Number(valorContado) || 0),
     })
 
     setEnviando(false)

@@ -12,7 +12,7 @@ export default function AbrirCaixa({ onAberto }: { onAberto: () => void }) {
     setEnviando(true)
 
     const { error } = await supabase.rpc('abrir_turno', {
-      p_valor_inicial: Number(valorInicial) || 0,
+      p_valor_inicial: Math.max(0, Number(valorInicial) || 0),
     })
 
     setEnviando(false)

@@ -26,7 +26,10 @@ create table produtos (
   ativo boolean not null default true,
   -- referência da nota fiscal de origem desse produto (opcional)
   nf text,
-  criado_em timestamptz not null default now()
+  criado_em timestamptz not null default now(),
+  -- tamanho só faz sentido pra Vestuário; a UI já impede, isso fecha a
+  -- mesma porta pra quem escrever direto na API.
+  constraint tamanho_so_vestuario check (categoria = 'Vestuário' or tamanho is null)
 );
 
 create table movimentos_estoque (
@@ -48,8 +51,8 @@ create table turnos (
   funcionario_id uuid not null references profiles(id),
   aberto_em timestamptz not null default now(),
   fechado_em timestamptz,
-  valor_inicial numeric not null default 0,
-  valor_contado numeric,
+  valor_inicial numeric not null default 0 check (valor_inicial >= 0),
+  valor_contado numeric check (valor_contado is null or valor_contado >= 0),
   status text not null default 'aberto' check (status in ('aberto', 'fechado'))
 );
 
@@ -483,6 +486,10 @@ begin
     raise exception 'Apenas funcionários abrem turno.';
   end if;
 
+  if p_valor_inicial is not null and p_valor_inicial < 0 then
+    raise exception 'O valor inicial não pode ser negativo.';
+  end if;
+
   if exists (select 1 from turnos where funcionario_id = auth.uid() and status = 'aberto') then
     raise exception 'Você já tem um turno aberto.';
   end if;
@@ -513,6 +520,10 @@ begin
 
   if not sistema_ativo() then
     raise exception 'Período de demonstração encerrado.';
+  end if;
+
+  if p_valor_contado is null or p_valor_contado < 0 then
+    raise exception 'O valor contado não pode ser negativo.';
   end if;
 
   -- trava o turno antes de fechar, pra evitar dois fechamentos
@@ -689,6 +700,23 @@ grant execute on function ajustar_estoque(uuid, int, text) to authenticated;
 grant execute on function registrar_entrada_estoque(uuid, int, text, text) to authenticated;
 grant execute on function abrir_turno(numeric) to authenticated;
 grant execute on function fechar_turno(uuid, numeric) to authenticated;
+
+-- =========================================================================
+-- ÍNDICES — colunas de filtro/join que crescem com o uso (vendas,
+-- movimentos de estoque, auditoria). Com poucos registros não faz
+-- diferença, mas depois de meses de uso real evita full scan nas telas
+-- de Resumo, Histórico e Auditoria.
+-- =========================================================================
+
+create index if not exists idx_movimentos_estoque_produto_id on movimentos_estoque(produto_id);
+create index if not exists idx_movimentos_estoque_criado_em on movimentos_estoque(criado_em);
+create index if not exists idx_itens_venda_venda_id on itens_venda(venda_id);
+create index if not exists idx_vendas_turno_id on vendas(turno_id);
+create index if not exists idx_vendas_funcionario_id on vendas(funcionario_id);
+create index if not exists idx_vendas_criado_em on vendas(criado_em);
+create index if not exists idx_auditoria_criado_em on auditoria(criado_em);
+create index if not exists idx_auditoria_usuario_id on auditoria(usuario_id);
+create index if not exists idx_auditoria_tabela on auditoria(tabela);
 
 -- =========================================================================
 -- REALTIME (opcional, mas combina com telas que atualizam sozinhas)
