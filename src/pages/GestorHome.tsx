@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
+import { useProdutos, useEstoque } from '../lib/hooks'
 import Produtos from './gestor/Produtos'
 import Estoque from './gestor/Estoque'
 import Historico from './gestor/Historico'
@@ -16,9 +17,25 @@ const ABAS: { id: Aba; label: string }[] = [
 
 export default function GestorHome() {
   const [aba, setAba] = useState<Aba>('produtos')
+  const { produtos } = useProdutos()
+  const { estoque } = useEstoque()
+
+  const estoqueBaixo = produtos.filter((p) => (estoque[p.id] ?? 0) <= p.estoque_minimo)
 
   return (
     <Layout>
+      {estoqueBaixo.length > 0 && (
+        <button
+          onClick={() => setAba('produtos')}
+          className="w-full text-left bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 mb-4 text-sm text-amber-800 hover:bg-amber-100 transition-colors"
+        >
+          <span className="font-semibold">
+            {estoqueBaixo.length} produto{estoqueBaixo.length === 1 ? '' : 's'} com estoque baixo:
+          </span>{' '}
+          {estoqueBaixo.map((p) => p.nome + (p.tamanho ? ` (${p.tamanho})` : '')).join(', ')}
+        </button>
+      )}
+
       <div className="flex gap-2 mb-6 border-b border-slate-200">
         {ABAS.map((item) => (
           <button

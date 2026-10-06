@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase'
 type Operacao = 'entrada' | 'ajuste'
 
 export default function Estoque() {
-  const { produtos } = useProdutos()
+  const { produtos } = useProdutos(true)
   const { estoque, refetch } = useEstoque()
 
   const [operacao, setOperacao] = useState<Operacao>('entrada')
@@ -109,6 +109,7 @@ export default function Estoque() {
                 <option key={p.id} value={p.id}>
                   {p.nome}
                   {p.tamanho ? ` (${p.tamanho})` : ''} — {estoque[p.id] ?? 0} em estoque
+                  {!p.ativo ? ' (inativo)' : ''}
                 </option>
               ))}
             </select>
