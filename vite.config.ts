@@ -14,7 +14,7 @@ export default defineConfig({
       manifest: {
         name: 'Vizi Vendas',
         short_name: 'Vizi Vendas',
-        description: 'Ponto de venda para o quiosque',
+        description: 'Vendas, estoque e caixa para pequenos comércios',
         theme_color: '#0B5CAB',
         background_color: '#F4F6F9',
         display: 'standalone',
