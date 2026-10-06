@@ -58,14 +58,15 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 const CONTAS = {
   gestor: { email: env.GESTOR_EMAIL, password: env.GESTOR_SENHA },
-  funcionario: { email: env.FUNCIONARIO_EMAIL, password: env.FUNCIONARIO_SENHA },
+  funcionario1: { email: env.FUNCIONARIO1_EMAIL, password: env.FUNCIONARIO1_SENHA },
+  funcionario2: { email: env.FUNCIONARIO2_EMAIL, password: env.FUNCIONARIO2_SENHA },
   dono: { email: env.DONO_EMAIL, password: env.DONO_SENHA },
 }
 
 for (const [papel, cred] of Object.entries(CONTAS)) {
   if (!cred.email || !cred.password) {
     console.error(
-      `Falta email/senha de "${papel}" em scripts/.credenciais-teste.local (GESTOR_EMAIL, GESTOR_SENHA, FUNCIONARIO_EMAIL, FUNCIONARIO_SENHA, DONO_EMAIL, DONO_SENHA).`
+      `Falta email/senha de "${papel}" em scripts/.credenciais-teste.local (GESTOR_EMAIL, GESTOR_SENHA, FUNCIONARIO1_EMAIL, FUNCIONARIO1_SENHA, FUNCIONARIO2_EMAIL, FUNCIONARIO2_SENHA, DONO_EMAIL, DONO_SENHA).`
     )
     process.exit(1)
   }
@@ -182,52 +183,52 @@ async function testarGestor(client, userId) {
   await testarAcoesComuns('gestor', client)
 }
 
-async function testarFuncionario(client, userId) {
-  registrar('funcionario', 'cadastrar produto (insert)', await client
+async function testarFuncionario(papel, client, userId) {
+  registrar(papel, 'cadastrar produto (insert)', await client
     .from('produtos')
     .insert([{ nome: 'Produto via teste RBAC', categoria: 'Souvenir', preco: 1 }])
     .select())
 
-  registrar('funcionario', 'editar produto (update)', await client
+  registrar(papel, 'editar produto (update)', await client
     .from('produtos')
     .update({ preco: 999 })
     .neq('id', UUID_FALSO)
     .select())
 
-  registrar('funcionario', 'entrada de estoque (RPC)', await client.rpc('registrar_entrada_estoque', {
+  registrar(papel, 'entrada de estoque (RPC)', await client.rpc('registrar_entrada_estoque', {
     p_produto_id: UUID_FALSO,
     p_quantidade: 1,
     p_motivo: 'teste rbac',
     p_nf: null,
   }))
 
-  registrar('funcionario', 'ajuste de estoque (RPC)', await client.rpc('ajustar_estoque', {
+  registrar(papel, 'ajuste de estoque (RPC)', await client.rpc('ajustar_estoque', {
     p_produto_id: UUID_FALSO,
     p_quantidade: 1,
     p_motivo: 'teste rbac',
   }))
 
-  registrar('funcionario', 'cancelar venda (RPC)', await client.rpc('cancelar_venda', {
+  registrar(papel, 'cancelar venda (RPC)', await client.rpc('cancelar_venda', {
     p_venda_id: UUID_FALSO,
     p_motivo: 'teste rbac',
   }))
 
   registrarLeitura(
-    'funcionario',
+    papel,
     'ler vendas de outros (select sem filtro)',
     await client.from('vendas').select('id, funcionario_id'),
     (linha) => linha.funcionario_id === userId
   )
 
   registrarLeitura(
-    'funcionario',
+    papel,
     'ler movimentos de estoque (motivo/quem fez)',
     await client.from('movimentos_estoque').select('id')
   )
 
-  registrarLeitura('funcionario', 'ler auditoria', await client.from('auditoria').select('id'))
+  registrarLeitura(papel, 'ler auditoria', await client.from('auditoria').select('id'))
 
-  await testarAcoesComuns('funcionario', client)
+  await testarAcoesComuns(papel, client)
 }
 
 async function testarDono(client, userId) {
@@ -351,7 +352,7 @@ async function testarAutoAlteracaoDeCredenciais() {
 async function main() {
   if (MODO_EXPIRADO) {
     console.log('=== Bateria de EXPIRAÇÃO (rode só depois de setar configuracao.expira_em pro passado) ===\n')
-    for (const papel of ['gestor', 'funcionario', 'dono']) {
+    for (const papel of ['gestor', 'funcionario1', 'funcionario2', 'dono']) {
       const { client } = await login(papel)
       registrarLeitura(papel, '[expirado] ler produtos', await client.from('produtos').select('id'))
       if (papel === 'gestor') {
@@ -362,7 +363,7 @@ async function main() {
           p_nf: null,
         }))
       }
-      if (papel === 'funcionario') {
+      if (papel === 'funcionario1' || papel === 'funcionario2') {
         registrar(papel, '[expirado] abrir_turno (RPC)', await client.rpc('abrir_turno', { p_valor_inicial: 0 }))
       }
       if (papel === 'dono') {
@@ -378,9 +379,13 @@ async function main() {
     await testarGestor(gestor.client, gestor.userId)
     await gestor.client.auth.signOut()
 
-    const funcionario = await login('funcionario')
-    await testarFuncionario(funcionario.client, funcionario.userId)
-    await funcionario.client.auth.signOut()
+    const funcionario1 = await login('funcionario1')
+    await testarFuncionario('funcionario1', funcionario1.client, funcionario1.userId)
+    await funcionario1.client.auth.signOut()
+
+    const funcionario2 = await login('funcionario2')
+    await testarFuncionario('funcionario2', funcionario2.client, funcionario2.userId)
+    await funcionario2.client.auth.signOut()
 
     const dono = await login('dono')
     await testarDono(dono.client, dono.userId)

@@ -1,6 +1,6 @@
 # Relatório de verificação RBAC — bateria normal
 
-Gerado em 2026-10-06T21:12:58.358Z
+Gerado em 2026-10-06T22:17:09.896Z
 
 | Papel | Ação | Resultado | Detalhe |
 |---|---|---|---|
@@ -10,17 +10,28 @@ Gerado em 2026-10-06T21:12:58.358Z
 | gestor | alterar registro de auditoria (update) | ✅ bloqueado | erro: permission denied for table auditoria |
 | gestor | apagar registro de auditoria (delete) | ✅ bloqueado | erro: permission denied for table auditoria |
 | gestor | alterar configuracao (expira_em) | ✅ bloqueado | erro: permission denied for table configuracao |
-| funcionario | cadastrar produto (insert) | ✅ bloqueado | erro: new row violates row-level security policy for table "produtos" |
-| funcionario | editar produto (update) | ✅ bloqueado | sem erro, mas 0 linhas afetadas/retornadas (RLS filtrou) |
-| funcionario | entrada de estoque (RPC) | ✅ bloqueado | erro: Apenas o gestor dá entrada em estoque. |
-| funcionario | ajuste de estoque (RPC) | ✅ bloqueado | erro: Apenas o gestor ajusta estoque. |
-| funcionario | cancelar venda (RPC) | ✅ bloqueado | erro: Apenas o gestor cancela vendas. |
-| funcionario | ler vendas de outros (select sem filtro) | ✅ bloqueado | 0 linhas retornadas (RLS filtrou) |
-| funcionario | ler movimentos de estoque (motivo/quem fez) | ✅ bloqueado | 0 linhas retornadas (RLS filtrou) |
-| funcionario | ler auditoria | ✅ bloqueado | 0 linhas retornadas (RLS filtrou) |
-| funcionario | alterar registro de auditoria (update) | ✅ bloqueado | erro: permission denied for table auditoria |
-| funcionario | apagar registro de auditoria (delete) | ✅ bloqueado | erro: permission denied for table auditoria |
-| funcionario | alterar configuracao (expira_em) | ✅ bloqueado | erro: permission denied for table configuracao |
+| funcionario1 | cadastrar produto (insert) | ✅ bloqueado | erro: new row violates row-level security policy for table "produtos" |
+| funcionario1 | editar produto (update) | ✅ bloqueado | sem erro, mas 0 linhas afetadas/retornadas (RLS filtrou) |
+| funcionario1 | entrada de estoque (RPC) | ✅ bloqueado | erro: Apenas o gestor dá entrada em estoque. |
+| funcionario1 | ajuste de estoque (RPC) | ✅ bloqueado | erro: Apenas o gestor ajusta estoque. |
+| funcionario1 | cancelar venda (RPC) | ✅ bloqueado | erro: Apenas o gestor cancela vendas. |
+| funcionario1 | ler vendas de outros (select sem filtro) | ✅ bloqueado | 0 linhas retornadas (RLS filtrou) |
+| funcionario1 | ler movimentos de estoque (motivo/quem fez) | ✅ bloqueado | 0 linhas retornadas (RLS filtrou) |
+| funcionario1 | ler auditoria | ✅ bloqueado | 0 linhas retornadas (RLS filtrou) |
+| funcionario1 | alterar registro de auditoria (update) | ✅ bloqueado | erro: permission denied for table auditoria |
+| funcionario1 | apagar registro de auditoria (delete) | ✅ bloqueado | erro: permission denied for table auditoria |
+| funcionario1 | alterar configuracao (expira_em) | ✅ bloqueado | erro: permission denied for table configuracao |
+| funcionario2 | cadastrar produto (insert) | ✅ bloqueado | erro: new row violates row-level security policy for table "produtos" |
+| funcionario2 | editar produto (update) | ✅ bloqueado | sem erro, mas 0 linhas afetadas/retornadas (RLS filtrou) |
+| funcionario2 | entrada de estoque (RPC) | ✅ bloqueado | erro: Apenas o gestor dá entrada em estoque. |
+| funcionario2 | ajuste de estoque (RPC) | ✅ bloqueado | erro: Apenas o gestor ajusta estoque. |
+| funcionario2 | cancelar venda (RPC) | ✅ bloqueado | erro: Apenas o gestor cancela vendas. |
+| funcionario2 | ler vendas de outros (select sem filtro) | ✅ bloqueado | 0 linhas retornadas (RLS filtrou) |
+| funcionario2 | ler movimentos de estoque (motivo/quem fez) | ✅ bloqueado | 0 linhas retornadas (RLS filtrou) |
+| funcionario2 | ler auditoria | ✅ bloqueado | 0 linhas retornadas (RLS filtrou) |
+| funcionario2 | alterar registro de auditoria (update) | ✅ bloqueado | erro: permission denied for table auditoria |
+| funcionario2 | apagar registro de auditoria (delete) | ✅ bloqueado | erro: permission denied for table auditoria |
+| funcionario2 | alterar configuracao (expira_em) | ✅ bloqueado | erro: permission denied for table configuracao |
 | dono | cadastrar produto (insert) | ✅ bloqueado | erro: new row violates row-level security policy for table "produtos" |
 | dono | editar produto (update) | ✅ bloqueado | sem erro, mas 0 linhas afetadas/retornadas (RLS filtrou) |
 | dono | entrada de estoque (RPC) | ✅ bloqueado | erro: Apenas o gestor dá entrada em estoque. |
