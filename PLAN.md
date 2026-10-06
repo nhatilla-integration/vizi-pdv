@@ -33,6 +33,27 @@ Plano e esquema de banco, pra aprovação antes de começar o frontend.
 8. ✅ Dono: resumo do dia (por forma de pagamento, funcionário, mais vendidos) e auditoria (filtros por data/usuário/tabela, diff de campos). Testado de ponta a ponta.
 9. ✅ Projeto versionado (git), suíte de testes (vitest, lógica de Resumo/Auditoria extraída e testada), constraints de integridade (tamanho só em Vestuário, valores de caixa não-negativos), índices de performance, revalidação periódica de `sistema_ativo()`, alerta de estoque baixo.
 
+## Ideias pra personalizar o piloto (pós-demo, não pra agora)
+
+Feedback de quem vai rodar a demo: as permissões atuais fazem sentido pro
+teste de 7 dias, mas um quiosque pequeno de verdade provavelmente pede
+ajustes. Guardando aqui pra quando for montar a proposta do piloto —
+também vira argumento de venda ("ajustamos as permissões à rotina real
+do quiosque").
+
+- **Gestor acompanhar vendas do dia.** Hoje só o dono tem a aba Resumo.
+  O RLS já libera gestor pra ler `vendas`/`itens_venda` (mesma regra do
+  dono) — é só reaproveitar o componente `Resumo.tsx` também no
+  `GestorHome`. Não precisa mexer no banco, só na navegação.
+- **Gestor também vender / abrir caixa.** Em quiosque pequeno o gestor
+  às vezes atende. Hoje `abrir_turno`, `registrar_venda` e
+  `fechar_turno` exigem `meu_papel() = 'funcionario'` estritamente —
+  pra liberar, trocaria pra `meu_papel() in ('funcionario', 'gestor')`
+  nas 3 funções, e o `GestorHome` ganharia uma aba "Vender" reaproveitando
+  `AbrirCaixa.tsx`/`Venda.tsx`/`FecharCaixa.tsx`. Isso é mudança de RLS
+  e RPC, não só de tela — vale tratar como uma opção configurável por
+  cliente, não como padrão pra todo mundo.
+
 ## Pendências conhecidas (não bloqueantes pro uso atual)
 
 - Sem recuperação de senha ("esqueci minha senha") — ok pros 3 usuários de teste fixos (senha trocada direto no Supabase Dashboard), mas necessário antes de qualquer uso com dono de loja real.
