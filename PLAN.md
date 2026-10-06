@@ -29,10 +29,18 @@ Plano e esquema de banco, pra aprovação antes de começar o frontend.
 4. ✅ `profiles` preenchido, estoque inicial de demonstração lançado
 5. ✅ Base do frontend (Vite + React + TS + Tailwind + PWA), login real, roteamento por papel — testado com os 3 perfis, todos entrando certo
 6. ✅ Funcionário: abrir caixa → tela de venda (grade de produtos por categoria, carrinho, forma de pagamento) → fechar caixa. Testado de ponta a ponta (venda real descontando estoque, fechamento calculando diferença corretamente).
-7. **Próximo**:
-   - Gestor: produtos (cadastro/edição), entrada de estoque, ajustes, cancelamentos
-   - Dono: resumo do dia, auditoria
+7. ✅ Gestor: produtos (cadastro/edição com categoria/tamanho/NF), entrada de estoque, ajustes, histórico (com devolução por cancelamento), cancelamentos (com itens da venda visíveis). Testado de ponta a ponta.
+8. ✅ Dono: resumo do dia (por forma de pagamento, funcionário, mais vendidos) e auditoria (filtros por data/usuário/tabela, diff de campos). Testado de ponta a ponta.
+9. ✅ Projeto versionado (git), suíte de testes (vitest, lógica de Resumo/Auditoria extraída e testada), constraints de integridade (tamanho só em Vestuário, valores de caixa não-negativos), índices de performance, revalidação periódica de `sistema_ativo()`, alerta de estoque baixo.
+
+## Pendências conhecidas (não bloqueantes pro uso atual)
+
+- Sem recuperação de senha ("esqueci minha senha") — ok pros 3 usuários de teste fixos (senha trocada direto no Supabase Dashboard), mas necessário antes de qualquer uso com dono de loja real.
+- PWA instalável mas sem tratamento de estado offline (sem fila/retry se a conexão cair no meio de uma venda).
+- Cancelar uma venda de um turno já fechado devolve o estoque corretamente, mas o resumo de fechamento que o funcionário já viu naquele turno não é recalculado — é um snapshot do momento do fechamento, não uma visão viva.
+- Sem exportação (CSV/PDF) do Resumo do dia ou da Auditoria.
+- Sem unique constraint em produtos — possível cadastrar duplicado sem perceber.
 
 ## Stack confirmada
 
-React + TypeScript (Vite) · Tailwind · Supabase (Auth + Postgres) · Vercel · PWA instalável, layout de tablet.
+React + TypeScript (Vite) · Tailwind · Supabase (Auth + Postgres) · Vercel · PWA instalável, layout de tablet · Vitest.
