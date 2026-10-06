@@ -11,6 +11,14 @@
 --
 -- Não mexe nos nomes dos perfis (Ebrahim/Fátima/João/Manuel) — isso é
 -- feito uma vez só, não faz parte do reset.
+--
+-- CHECKLIST MANUAL (fazer no painel, não dá pra fazer por SQL):
+--   Antes de cada envio, resete a senha das 4 contas de demonstração
+--   pra valores conhecidos (Authentication -> Users -> "..." -> Reset
+--   password). Qualquer uma delas pode trocar a própria senha via API
+--   direta (comportamento padrão do Supabase Auth, não é papel-
+--   específico e não muda nenhuma permissão) — resetar antes de cada
+--   envio garante que você sempre sabe a senha de quem vai testar.
 
 begin;
 

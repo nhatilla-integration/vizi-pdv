@@ -57,13 +57,13 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 }
 
 const CONTAS = {
-  gestor: { email: env.GESTOR_EMAIL, senha: env.GESTOR_SENHA },
-  funcionario: { email: env.FUNCIONARIO_EMAIL, senha: env.FUNCIONARIO_SENHA },
-  dono: { email: env.DONO_EMAIL, senha: env.DONO_SENHA },
+  gestor: { email: env.GESTOR_EMAIL, password: env.GESTOR_SENHA },
+  funcionario: { email: env.FUNCIONARIO_EMAIL, password: env.FUNCIONARIO_SENHA },
+  dono: { email: env.DONO_EMAIL, password: env.DONO_SENHA },
 }
 
 for (const [papel, cred] of Object.entries(CONTAS)) {
-  if (!cred.email || !cred.senha) {
+  if (!cred.email || !cred.password) {
     console.error(
       `Falta email/senha de "${papel}" em scripts/.credenciais-teste.local (GESTOR_EMAIL, GESTOR_SENHA, FUNCIONARIO_EMAIL, FUNCIONARIO_SENHA, DONO_EMAIL, DONO_SENHA).`
     )
