@@ -17,21 +17,22 @@ Plano e esquema de banco, pra aprovação antes de começar o frontend.
 
 - **`registrar_venda`** recebe os itens como um array JSON (`[{"produto_id": "...", "quantidade": 2}, ...]`) e a forma de pagamento. Valida preço, estoque e turno aberto antes de gravar qualquer coisa; se qualquer item falhar, a função inteira falha (nada fica gravado pela metade, porque é uma única transação).
 - **`fechar_turno`** calcula o esperado por forma de pagamento a partir das vendas daquele turno, soma o valor inicial ao esperado em numerário, e retorna a diferença (`valor_contado - esperado`). Isso aparece pronto no fechamento de caixa.
-- **Perfis não têm tela de autoedição** — não há política de UPDATE em `profiles`. Como são só 3 usuários fixos de teste, presumi que trocar nome/papel é feito direto no banco, não pelo app. Se quiser uma tela pra isso depois, dá pra adicionar.
-- **Criação dos 3 usuários de teste**: como no Vizi, crio o login de cada um direto no Supabase Dashboard (Authentication → Users → Add user) — é o jeito mais confiável de garantir senha funcionando de verdade. Depois disso, insiro manualmente a linha correspondente em `profiles` com o `papel` de cada um. O SQL já está pronto pra isso, só falta os UUIDs reais.
+- **Perfis não têm tela de autoedição** — não há política de UPDATE em `profiles`. Como são só 4 usuários fixos de teste, presumi que trocar nome/papel é feito direto no banco, não pelo app. Se quiser uma tela pra isso depois, dá pra adicionar.
+- **Criação dos usuários de teste**: como no Vizi, crio o login de cada um direto no Supabase Dashboard (Authentication → Users → Add user) — é o jeito mais confiável de garantir senha funcionando de verdade. Depois disso, insiro manualmente a linha correspondente em `profiles` com o `papel` de cada um. O SQL já está pronto pra isso, só falta os UUIDs reais. São 4 contas: Ebrahim (dono), Fátima (gestora), João e Manuel (funcionários — dois, pra simular revezamento de turno/atendimento).
 - **Estoque inicial do seed**: deixei os 20 produtos cadastrados, mas o insert de `movimentos_estoque` que dá 50 unidades iniciais pra cada um está comentado no final do `schema.sql`, porque precisa do UUID do usuário gestor (que só existe depois de criar os usuários de teste). Depois que o gestor existir, é só descomentar essas duas linhas e rodar.
 
 ## Próximos passos (nessa ordem)
 
 1. ✅ `schema.sql` aprovado e revisado (segurança, locks de concorrência)
 2. ✅ Projeto Supabase criado, schema rodado
-3. ✅ 3 usuários de teste criados (gestor/funcionario/dono)
+3. ✅ 4 usuários de teste criados (1 gestor, 1 dono, 2 funcionários)
 4. ✅ `profiles` preenchido, estoque inicial de demonstração lançado
-5. ✅ Base do frontend (Vite + React + TS + Tailwind + PWA), login real, roteamento por papel — testado com os 3 perfis, todos entrando certo
+5. ✅ Base do frontend (Vite + React + TS + Tailwind + PWA), login real, roteamento por papel — testado com os 3 papéis, todos entrando certo
 6. ✅ Funcionário: abrir caixa → tela de venda (grade de produtos por categoria, carrinho, forma de pagamento) → fechar caixa. Testado de ponta a ponta (venda real descontando estoque, fechamento calculando diferença corretamente).
 7. ✅ Gestor: produtos (cadastro/edição com categoria/tamanho/NF), entrada de estoque, ajustes, histórico (com devolução por cancelamento), cancelamentos (com itens da venda visíveis). Testado de ponta a ponta.
 8. ✅ Dono: resumo do dia (por forma de pagamento, funcionário, mais vendidos) e auditoria (filtros por data/usuário/tabela, diff de campos). Testado de ponta a ponta.
 9. ✅ Projeto versionado (git), suíte de testes (vitest, lógica de Resumo/Auditoria extraída e testada), constraints de integridade (tamanho só em Vestuário, valores de caixa não-negativos), índices de performance, revalidação periódica de `sistema_ativo()`, alerta de estoque baixo.
+10. ✅ Verificação de permissões (RBAC) feita de verdade contra a API da demo — 40/40 ações proibidas bloqueadas, papel por papel, incluindo prazo expirado. Ver `RELATORIO-RBAC.md`. Script reaproveitável em `scripts/teste-rbac.js`.
 
 ## Ideias pra personalizar o piloto (pós-demo, não pra agora)
 
@@ -56,7 +57,7 @@ do quiosque").
 
 ## Pendências conhecidas (não bloqueantes pro uso atual)
 
-- Sem recuperação de senha ("esqueci minha senha") — ok pros 3 usuários de teste fixos (senha trocada direto no Supabase Dashboard), mas necessário antes de qualquer uso com dono de loja real.
+- Sem recuperação de senha ("esqueci minha senha") — ok pros 4 usuários de teste fixos (senha trocada direto no Supabase Dashboard), mas necessário antes de qualquer uso com dono de loja real.
 - PWA instalável mas sem tratamento de estado offline (sem fila/retry se a conexão cair no meio de uma venda).
 - Cancelar uma venda de um turno já fechado devolve o estoque corretamente, mas o resumo de fechamento que o funcionário já viu naquele turno não é recalculado — é um snapshot do momento do fechamento, não uma visão viva.
 - Sem exportação (CSV/PDF) do Resumo do dia ou da Auditoria.

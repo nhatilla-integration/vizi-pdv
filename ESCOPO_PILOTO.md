@@ -36,6 +36,22 @@ parte.
 - **Suporte.** Canal direto pra dúvidas e problemas durante o uso real.
 - **Backups.** Rotina de backup do banco de dados do piloto.
 
+## Incluído no piloto
+
+Recursos que a demo não tem, mas que fazem parte do piloto pago desde
+o início (não são extras a negociar depois):
+
+- **Recuperação de senha** ("esqueci minha senha") — hoje só dá pra
+  trocar direto no painel do Supabase; no piloto, fluxo normal de
+  redefinição por e-mail.
+- **Funcionamento com internet instável.** Fila de vendas com
+  reenvio automático — se a conexão cair no meio de uma venda, ela
+  fica guardada no tablet e é reenviada assim que a internet voltar,
+  em vez de simplesmente dar erro.
+- **Exportação do Resumo e da Auditoria em CSV/PDF.**
+- **Bloqueio de produtos duplicados** — impede cadastrar duas vezes o
+  mesmo produto (mesmo nome/categoria/tamanho) sem perceber.
+
 ## Melhorias sugeridas para o piloto
 
 Identificadas durante os testes da demo, fazem mais sentido pra um
