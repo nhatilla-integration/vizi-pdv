@@ -1,7 +1,7 @@
 -- reset_demo.sql
--- Rode isso inteiro no SQL Editor do Supabase, logo ANTES de enviar o
--- link da demo pro Ebrahim. Pode rodar de novo com segurança sempre que
--- precisar resetar (é seguro repetir).
+-- Rode isso inteiro no SQL Editor do Supabase sempre que precisar de um
+-- ambiente limpo pra demonstrar/gravar o Vizi Vendas (ex: antes de
+-- enviar a demo pra alguém, ou antes de gravar vídeo). Seguro de repetir.
 --
 -- O que faz, nesta ordem:
 --   1. Apaga itens_venda, vendas, movimentos_estoque, turnos (nessa ordem,
@@ -15,7 +15,7 @@
 --   3. Só então apaga a auditoria — depois de tudo o resto, pra não
 --      sobrar nem o rastro do próprio reset (a entrada de estoque acima
 --      também gera linha de auditoria, por isso essa ordem importa).
---   4. Define a expiração pra uma data fixa (ajuste conforme o combinado).
+--   4. Renova o prazo de demonstração por mais 14 dias a partir de agora.
 -- Tudo dentro de begin/commit: ou roda tudo, ou não roda nada.
 --
 -- Não mexe nos nomes dos perfis (Ebrahim/Fátima/João/Manuel) — isso é
@@ -55,7 +55,7 @@ from produtos;
 delete from auditoria;
 
 update configuracao
-set expira_em = '2026-10-13 23:59:00+02', modo_demo = true
+set expira_em = now() + interval '14 days', modo_demo = true
 where id = 1;
 
 commit;
