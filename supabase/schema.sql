@@ -10,7 +10,10 @@ create extension if not exists "pgcrypto";
 create table profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   nome text not null,
-  papel text not null check (papel in ('gestor', 'funcionario', 'dono'))
+  papel text not null check (papel in ('gestor', 'funcionario', 'dono')),
+  -- contas marcadas aqui ignoram o prazo de demonstração em sistema_ativo()
+  -- (uso: a dona do produto, não as contas de teste/demonstração)
+  acesso_ilimitado boolean not null default false
 );
 
 -- Categorias fixas (mantém em sincronia com o CHECK abaixo e com o <select>
@@ -127,7 +130,9 @@ security definer
 stable
 set search_path = public, pg_temp
 as $$
-  select coalesce((select now() <= expira_em from configuracao where id = 1), false);
+  select
+    coalesce((select acesso_ilimitado from profiles where id = auth.uid()), false)
+    or coalesce((select now() <= expira_em from configuracao where id = 1), false);
 $$;
 
 -- Leitura mínima de estoque pra tela de vendas do funcionário: ele não lê
