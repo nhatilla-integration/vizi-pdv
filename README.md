@@ -4,7 +4,7 @@
 
 ## Demonstração
 
-<video src="docs/demo.mp4" controls width="100%"></video>
+![Demonstração do Vizi Vendas](docs/demo.gif)
 
 Vizi Vendas é um sistema de ponto de venda (PDV) para pequenos comércios —
 vendas, estoque e caixa num único app, pensado para funcionar numa tablet
