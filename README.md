@@ -1,91 +1,84 @@
 # Vizi Vendas
 
-Sistema de ponto de venda (PDV) pra pequenos comércios — vendas, estoque
-e caixa num único app, pensado pra funcionar numa tablet Android, em
-loja/quiosque. Três papéis: **gestor** (produtos, estoque, cancelamentos),
-**funcionário** (abrir caixa, vender, fechar caixa) e **dono** (resumo
-do dia, auditoria — só leitura).
+🔗 **Demo ao vivo:** [pdv.vizicrm.com.br](https://pdv.vizicrm.com.br)
 
-Atualmente em fase de demonstração gratuita de 7 dias pra um piloto em
-Moçambique. Contexto completo do projeto em [`PLAN.md`](./PLAN.md), o
-que muda entre demo e piloto pago em [`ESCOPO_PILOTO.md`](./ESCOPO_PILOTO.md).
+## Demonstração
 
-## Stack
+<video src="docs/demo.mp4" controls width="100%"></video>
 
-React + TypeScript (Vite) · Tailwind CSS v4 · Supabase (Auth + Postgres,
-com RLS e funções `security definer`) · Vercel · PWA instalável
-(`vite-plugin-pwa`) · Vitest.
+Vizi Vendas é um sistema de ponto de venda (PDV) para pequenos comércios —
+vendas, estoque e caixa num único app, pensado para funcionar numa tablet
+Android, direto no balcão da loja ou quiosque.
 
-## Rodando localmente
+## Problema que resolve
+
+Pequenos comércios — quiosques, lojas de bairro — costumam controlar
+vendas e estoque de cabeça ou no papel: ninguém sabe ao certo o que vendeu
+mais, quando o estoque de um produto está acabando, ou se o dinheiro do
+caixa bate no fim do dia. O Vizi Vendas coloca venda, estoque e
+fechamento de caixa num fluxo só, com números calculados automaticamente
+em vez de contados na mão.
+
+## Tecnologias utilizadas
+
+* React + TypeScript
+* Vite
+* Tailwind CSS
+* Supabase (banco de dados Postgres, autenticação e Row Level Security)
+* Vercel
+* PWA instalável (funciona como app, direto da tela inicial do tablet)
+* Vitest
+
+## Como executar o projeto
 
 ```bash
 npm install
-cp .env.example .env.local   # preencher com as chaves do Supabase (ver abaixo)
+cp .env.example .env.local   # preencher com as chaves do seu projeto Supabase
 npm run dev
 ```
 
-Scripts disponíveis:
+O projeto sobe em `http://localhost:5173`. Pra conectar a um banco de
+verdade, rode `supabase/schema.sql` no SQL Editor do Supabase.
 
-- `npm run dev` — servidor de desenvolvimento
-- `npm run build` — build de produção (`tsc -b && vite build`)
-- `npm test` — roda a suíte de testes (Vitest)
-- `npm run lint` — lint (oxlint)
-- `npm run preview` — serve o build de produção localmente
+Não existe cadastro público de contas: cada papel (gestor, funcionário,
+dono) é uma conta criada manualmente no Supabase Dashboard
+(Authentication > Users > Add user) — proposital, pensado pra um negócio
+usar o sistema com a própria equipe, não pra qualquer visitante criar
+conta sozinho.
 
-## Variáveis de ambiente
+## Funcionalidades atuais
 
-Em `.env.local` (nunca commitado — veja `.env.example` pro formato):
+* Três papéis com permissões bem separadas (reforçadas no banco via RLS, não só na tela):
+  * **Gestor(a)**: cadastro de produtos (categoria, tamanho, preço, NF de origem), entrada e ajuste de estoque, histórico de movimentações, cancelamento de vendas
+  * **Funcionário**: abrir caixa, vender (grade de produtos, carrinho, forma de pagamento), fechar caixa com cálculo automático de diferença
+  * **Dono(a)**: resumo do dia (por forma de pagamento, funcionário, produtos mais vendidos) e auditoria completa de tudo que foi criado ou alterado — só leitura
+* Estoque derivado só de movimentos (entrada, venda, ajuste, devolução por cancelamento) — nunca editado à mão
+* Trilha de auditoria imutável: nenhum papel, nem gestor nem dono, consegue alterar ou apagar o rastro
+* Alerta visível de estoque baixo
+* Faixa de "período de demonstração" visível no topo, com data de expiração em horário local
+* PWA instalável, otimizado pra tablet em modo paisagem
+* Suíte de testes (Vitest) e verificação de permissões rodada de verdade contra o banco (`scripts/teste-rbac.js`), não só lida no código
+* Hospedado na Vercel
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+## Próximas etapas
 
-Sempre a chave **anon/publishable**, nunca a `service_role`. O app
-inteiro depende só disso + RLS pra segurança — não existe nenhum
-backend próprio.
+**Produto**
+* Cadastro público com conta própria por negócio (hoje são só 4 contas fixas, compartilhando o mesmo ambiente — não escala pra múltiplos clientes ao mesmo tempo)
+* Recuperação de senha pelo próprio app (hoje só reseta pelo Supabase Dashboard)
+* Funcionamento com internet instável (fila de vendas com reenvio automático)
+* Exportação do resumo e da auditoria em CSV/PDF
+* Conexão com WhatsApp e carteiras móveis (M-Pesa, e-Mola) para pagamento
 
-## Banco de dados
+**Técnico / qualidade**
+* Integração com maquininha de cartão (hoje a forma de pagamento é só um registro informativo)
 
-- `supabase/schema.sql` — schema completo (tabelas, RLS, funções,
-  índices). Rodar inteiro num projeto Supabase novo e vazio.
-- `supabase/migrations/` — alterações aplicadas depois do schema
-  inicial, em projetos que já existiam.
-- `supabase/reset_demo.sql` — limpa dados de teste, recoloca estoque
-  inicial e renova os 7 dias de demonstração. Rodar no SQL Editor do
-  Supabase antes de cada envio da demo (veja o checklist manual no
-  topo do arquivo — inclui resetar as senhas das contas de
-  demonstração no painel).
+## Documentação adicional
 
-### Alterar a data de expiração da demo
+* [`PLAN.md`](./PLAN.md) — histórico de decisões técnicas do projeto
+* [`ESCOPO_PILOTO.md`](./ESCOPO_PILOTO.md) — o que muda entre demo gratuita e piloto pago
+* [`TESTE-MANUAL.md`](./TESTE-MANUAL.md) — roteiro de teste manual por papel
+* [`RELATORIO-RBAC.md`](./RELATORIO-RBAC.md) — resultado da verificação de permissões rodada contra o banco real
 
-O prazo fica numa única linha na tabela `configuracao`:
+## Autora
 
-```sql
-update configuracao set expira_em = now() + interval '7 days' where id = 1;
-```
-
-Ajuste o intervalo conforme necessário. Passado esse prazo, toda
-leitura e escrita é bloqueada pro app inteiro (reforçado em RLS e nas
-funções RPC, não só na tela).
-
-## Verificação de permissões
-
-`scripts/teste-rbac.js` loga de verdade com cada papel (API direta,
-chave anon) e tenta as ações que aquele papel não deveria conseguir
-fazer, reportando bloqueado/permitido — não é teste de UI, é contra o
-banco de verdade. Precisa de um arquivo local
-`scripts/.credenciais-teste.local` (nunca commitado) com as
-credenciais das contas de teste. Resultado da última rodada em
-[`RELATORIO-RBAC.md`](./RELATORIO-RBAC.md). Roteiro de teste manual
-(pela tela) em [`TESTE-MANUAL.md`](./TESTE-MANUAL.md).
-
-## Publicando na Vercel
-
-```bash
-vercel link        # primeira vez, vincula a pasta ao projeto na Vercel
-vercel --prod       # publica
-```
-
-As variáveis de ambiente (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
-precisam estar configuradas no projeto da Vercel — `vercel env add
-VITE_SUPABASE_URL production` (e o mesmo pra `VITE_SUPABASE_ANON_KEY`).
-Elas entram no build, então mudar o valor exige publicar de novo.
+Natilla — [GitHub](https://github.com/nhatilla-integration)
